@@ -3,7 +3,7 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-
+let online = 0;
 // タイムゾーンを設定する
 const moment = require('moment');
 require('moment-timezone');
@@ -43,11 +43,32 @@ io.on('connection', (socket) => {
   // 切断時
   socket.on('disconnect', () => {
     console.log('disconnected:', socket.id);
+    online--;
+    io.emit('onlineData', online);
   });
 
   // ユーザの参加
-  socket.on('send', (message) => {
+  socket.on('setName', function(name) {
+    online++;
+    if (!name) name = '匿名';
+    console.log('setName', name);
+    console.log('online', online);
+    socket.name = name;
+    io.emit('onlineData', online);
+    io.emit('setName', name);
+  });
+  /*  socket.on('send', (message) => {
     console.log('send:', message);
     io.emit('send', message);
+  });
+  socket.on('send2', (message2) =>{
+    console.log('send2:', message2);
+    io.emit('send2', message2);
+  })
+  */
+  socket.on('b', function(data) {
+    console.log('b.mes:', data.message);
+    data.name = socket.name;
+    io.emit('b', data);
   });
 });
