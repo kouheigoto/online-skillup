@@ -1,7 +1,7 @@
 <template>
   <div>
-    <ul v-if="name === 'system'"><li class="message">{{ message }}</li></ul>
-  <ul v-else><li class="message">{{ name }}:{{ message }}</li></ul></div>
+    <ul v-if="name === ''"><li class="systemMessage">{{ message }}</li></ul>
+  <ul v-else><li :class="setClass"><p class="name">{{ name }}</p><p class="message">{{ message }}</p><p class="time">{{ time }}</p></li></ul></div>
 </template>
 
 <script>
@@ -11,13 +11,72 @@ export default {
   props: {
     name: VueTypes.string.isRequired,
     message: VueTypes.string.isRequired,
+    time: VueTypes.string.isRequired,
+    setClass: VueTypes.string.isRequired,
+  },
+  methods: {
+    // 削除ボタンをクリックした時
+    onDelete($event, key) {
+      event.stopPropagation();
+      this.$emit('delete', key);
+    }
   }
 };
+
 </script>
 
 <style lang="scss" scoped>
-.message {
-  outline: 10px;
+.systemMessage {
   list-style: none;
+  text-align: center;
+}
+
+.my {
+  list-style: none;
+  text-align: right;
+}
+
+.my .message {
+  text-align: left;
+  display: inline-block;
+  border-radius: 20px;
+  background: #0f0;
+  width: 400px;
+  padding-left: 10px;
+  padding-right: 1px;
+  font-size: 1.3em;
+}
+
+.my .name {
+  margin-right: 360px;
+}
+
+.other {
+  list-style: none;
+  text-align: left;
+}
+
+.other .message {
+  border-radius: 20px;
+  display: inline-block;
+  background: #0f0;
+  width: 400px;
+  padding-left: 10px;
+  padding-right: 1px;
+  font-size: 1.3em;
+}
+
+.time {
+  margin-left: 360px;
+}
+
+p {
+  margin: 5px;
+  padding-top: auto;
+  padding-bottom: auto;
+}
+
+li {
+  margin: 5px;
 }
 </style>

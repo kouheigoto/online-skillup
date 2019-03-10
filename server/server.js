@@ -4,6 +4,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 let online = 0;
+let id = 0;
+let joinList = [];
 // タイムゾーンを設定する
 const moment = require('moment');
 require('moment-timezone');
@@ -45,17 +47,26 @@ io.on('connection', (socket) => {
     console.log('disconnected:', socket.id);
     online--;
     io.emit('onlineData', online);
+    io.emit('disconnect', socket.name);
   });
 
   // ユーザの参加
   socket.on('setName', function(name) {
     online++;
-    if (!name) name = '匿名';
+    if (!name) {
+      name = '匿名' + id;
+      id++;
+    };
     console.log('setName', name);
     console.log('online', online);
     socket.name = name;
     io.emit('onlineData', online);
-    io.emit('setName', name);
+    io.emit('setName', (name));
+    joinList.push({
+      name: socket.name,
+      id: socket.id
+    });
+    io.emit('joinList', joinList);
   });
   /*  socket.on('send', (message) => {
     console.log('send:', message);
@@ -66,9 +77,15 @@ io.on('connection', (socket) => {
     io.emit('send2', message2);
   })
   */
-  socket.on('b', function(data) {
+  socket.on('sendMessage', function(data) {
     console.log('b.mes:', data.message);
+    io.to(socket.id).emit('setClass', 'my');
     data.name = socket.name;
-    io.emit('b', data);
+    io.emit('sendMessage', {
+      name: data.name,
+      message: data.message,
+      time: moment().format('HH:mm'),
+      socketid: socket.id
+    });
   });
 });
