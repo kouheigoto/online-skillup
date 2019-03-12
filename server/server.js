@@ -6,6 +6,7 @@ const cors = require('cors');
 let online = 0;
 let id = 0;
 let joinList = [];
+let index = 0;
 // タイムゾーンを設定する
 const moment = require('moment');
 require('moment-timezone');
@@ -48,6 +49,13 @@ io.on('connection', (socket) => {
     online--;
     io.emit('onlineData', online);
     io.emit('disconnect', socket.name);
+    index = joinList.findIndex((list) => list.id === socket.id);
+    console.log('socket.id', socket.id);
+    console.log('index', index);
+    if (index !== -1) {
+      joinList.splice(index, 1);
+      io.emit('disconnectuser', index);
+    }
   });
 
   // ユーザの参加
@@ -79,7 +87,7 @@ io.on('connection', (socket) => {
   */
   socket.on('sendMessage', function(data) {
     console.log('b.mes:', data.message);
-    io.to(socket.id).emit('setClass', 'my');
+    io.to(socket.id).emit('setClass', 'right');
     data.name = socket.name;
     io.emit('sendMessage', {
       name: data.name,

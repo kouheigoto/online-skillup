@@ -1,5 +1,5 @@
 <template>
-  <div class="timeline">
+  <div class="timeline" id="timeline">
     <p>
       <img class="logo" src="../images/logo.jpg" alt="ロゴ">
       <span class="sample">テスト</span>
@@ -45,16 +45,6 @@ export default {
       socket.emit('setName', prompt('ユーザー名入力'));
       console.log('connected!');
     });
-    socket.on('joinList', (list) => {
-      for (let j = 0; j < list.length; j++) {
-        this.$data.joinList.push({
-          name: list[j].name,
-          id: list[j].id
-        });
-        console.log('joinList.name', j, ':', this.$data.joinList[j].name);
-        console.log('joinList.id', j, ':', this.$data.joinList[j].id);
-      }
-    });
     socket.on('setName', (setName) => {
       this.name = setName;
       this.$data.messages.push({
@@ -72,6 +62,13 @@ export default {
         mes: setName + 'が退室しました'
       });
     });
+    socket.on('disconnectuser', (index) => {
+      this.$data.joinList.splice(index, 1);
+      for (let j = 0; j < this.$data.joinList.length; j++) {
+        console.log('dis.joinList.name', j, ':', this.$data.joinList[j].name);
+        console.log('dis.joinList.id', j, ':', this.$data.joinList[j].id);
+      }
+    });
     socket.on('setClass', (data) => {
       console.log('class', data);
       this.$data.setClass = data;
@@ -82,7 +79,7 @@ export default {
       /* this.$data.messages.name = data.name;
       this.$data.messages.mes = data.message;
       */
-      if (this.$data.setClass === '') this.$data.setClass = 'other';
+      if (this.$data.setClass === '') this.$data.setClass = 'left';
       this.$data.messages.push({
         name: data.name,
         mes: data.message,
@@ -127,7 +124,7 @@ export default {
     scrollDown() {
       console.log('scrollDown');
       const element = document.getElementById('timeline');
-      element.scrollTop = document.getElementById('timeline').scrollHeight;
+      element.scrollTop = element.scrollHeight;
     },
   }
 };

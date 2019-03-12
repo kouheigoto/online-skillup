@@ -31,12 +31,12 @@ export default {
   text-align: center;
 }
 
-.my {
+.right {
   list-style: none;
   text-align: right;
 }
 
-.my .message {
+.right .message {
   text-align: left;
   display: inline-block;
   border-radius: 20px;
@@ -47,16 +47,16 @@ export default {
   font-size: 1.3em;
 }
 
-.my .name {
+.right .name {
   margin-right: 360px;
 }
 
-.other {
+.left {
   list-style: none;
   text-align: left;
 }
 
-.other .message {
+.left .message {
   border-radius: 20px;
   display: inline-block;
   background: #0f0;
