@@ -4,6 +4,7 @@
       <img class="logo" src="../images/logo.jpg" alt="ロゴ">
       <span class="sample">テスト</span>
       <span>参加者：{{ $data.id }}人</span>
+      <router-link to="/Joinlist">参加者</router-link>
     </p>
     <form @submit="onSubmit" class="button">
       <input v-model="$data.mes" type="text" class="sendmessage"/>
@@ -14,7 +15,9 @@
     :name="post.name"
     :message="post.mes"
     :setClass="post.setClass"
-    :time="post.time"/>
+    :time="post.time"
+    :id="post.id"
+    @delete="onDelete"/>
   </div>
 </template>
 
@@ -22,17 +25,18 @@
 import socket from './utils/socket';
 // components
 import MyComponent from './components/MyComponent.vue';
+import Joinlist from './components/Joinlist.vue';
 
 export default {
   components: {
-    MyComponent
+    MyComponent,
+    Joinlist
   },
   data() {
     return {
       message: '',
       message2: '',
       messages: [],
-      nextid: '1',
       name: '',
       mes: '',
       setClass: '',
@@ -41,10 +45,12 @@ export default {
     };
   },
   created() {
+    // ユーザー名入力
     socket.on('connect', () => {
       socket.emit('setName', prompt('ユーザー名入力'));
       console.log('connected!');
     });
+    // 参加通知
     socket.on('setName', (setName) => {
       this.name = setName;
       this.$data.messages.push({
@@ -52,9 +58,11 @@ export default {
         mes: setName + 'が参加しました'
       });
     });
+    // 参加人数変更
     socket.on('onlineData', (setData) => {
       this.$data.id = setData;
     });
+    // 退室通知
     socket.on('disconnect', (setName) => {
       this.name = setName;
       this.$data.messages.push({
@@ -62,6 +70,7 @@ export default {
         mes: setName + 'が退室しました'
       });
     });
+    /*
     socket.on('disconnectuser', (index) => {
       this.$data.joinList.splice(index, 1);
       for (let j = 0; j < this.$data.joinList.length; j++) {
@@ -69,10 +78,22 @@ export default {
         console.log('dis.joinList.id', j, ':', this.$data.joinList[j].id);
       }
     });
+    */
+    socket.on('deleteMessage', (key) => {
+      const index = this.$data.messages.findIndex((mes) => mes.id === key);
+      if (index !== -1) {
+        this.$data.messages.splice(index, 1);
+      }
+    });
+    socket.on('joinList', (list) => {
+      this.$data.joinList = list;
+    });
+    // クラスセット
     socket.on('setClass', (data) => {
       console.log('class', data);
       this.$data.setClass = data;
     });
+    // メッセージプッシュ
     socket.on('sendMessage', (data) => {
       console.log('name', data.name);
       console.log('mes', data.message);
@@ -84,9 +105,9 @@ export default {
         name: data.name,
         mes: data.message,
         time: data.time,
+        id: data.id,
         setClass: this.$data.setClass
       });
-      this.scrollDown();
       this.$data.setClass = '';
       for (let i = 0; i < this.$data.messages.length; i++) {
         /* if (this.$data.messages[i].name === '' && this.$data.messages[i].mes === '') {
@@ -95,8 +116,10 @@ export default {
          */ console.log('check.name', this.$data.messages[i].name);
         console.log('check.mes', this.$data.messages[i].mes);
         console.log('check.setClass', this.$data.messages[i].setClass);
+        console.log('check.id', this.$data.messages[i].id);
         console.log('check.length', i);
       }
+      this.scrollDown();
     });
   },
   methods: {
@@ -105,22 +128,18 @@ export default {
      */
     onSubmit(e) {
       e.preventDefault();
-      /*
-      socket.emit('send', this.$data.text);
-      socket.emit('send2', this.$data.text1);
-      */
       socket.emit('sendMessage', {
         name: '',
         message: this.$data.mes
       });
       this.$data.mes = '';
     },
+    // deleteボタン
     onDelete(key) {
-      const index = this.$data.list.indexOf(key);
-      if (index !== -1) {
-        this.$data.messages.splice(index, 1);
-      }
+      console.log('delete2');
+      socket.emit('deleteMessage', key);
     },
+    // scroll位置変更
     scrollDown() {
       console.log('scrollDown');
       const element = document.getElementById('timeline');

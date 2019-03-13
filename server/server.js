@@ -7,6 +7,7 @@ let online = 0;
 let id = 0;
 let joinList = [];
 let index = 0;
+let mesId = 0;
 // タイムゾーンを設定する
 const moment = require('moment');
 require('moment-timezone');
@@ -54,8 +55,14 @@ io.on('connection', (socket) => {
     console.log('index', index);
     if (index !== -1) {
       joinList.splice(index, 1);
-      io.emit('disconnectuser', index);
     }
+    io.emit('joinList', joinList);
+  });
+
+  // メッセージ削除
+  socket.on('deleteMessage', (key) => {
+    console.log('key', key);
+    io.emit('deleteMessage', key);
   });
 
   // ユーザの参加
@@ -76,15 +83,8 @@ io.on('connection', (socket) => {
     });
     io.emit('joinList', joinList);
   });
-  /*  socket.on('send', (message) => {
-    console.log('send:', message);
-    io.emit('send', message);
-  });
-  socket.on('send2', (message2) =>{
-    console.log('send2:', message2);
-    io.emit('send2', message2);
-  })
-  */
+
+  // メッセージ送信
   socket.on('sendMessage', function(data) {
     console.log('b.mes:', data.message);
     io.to(socket.id).emit('setClass', 'right');
@@ -93,7 +93,9 @@ io.on('connection', (socket) => {
       name: data.name,
       message: data.message,
       time: moment().format('HH:mm'),
+      id: mesId,
       socketid: socket.id
     });
+    mesId++;
   });
 });

@@ -1,7 +1,10 @@
 <template>
   <div>
     <ul v-if="name === ''"><li class="systemMessage">{{ message }}</li></ul>
-  <ul v-else><li :class="setClass"><p class="name">{{ name }}</p><p class="message">{{ message }}</p><p class="time">{{ time }}</p></li></ul></div>
+  <ul v-else><li :class="setClass"><p class="name">{{ name }}</p>
+  <p class="message">{{ message }}</p>
+  <p class="time">{{ time }}</p>
+  <p v-if="setClass === 'right'"><button @click="onDelete($event, id)">削除</button></p></li></ul></div>
 </template>
 
 <script>
@@ -13,12 +16,15 @@ export default {
     message: VueTypes.string.isRequired,
     time: VueTypes.string.isRequired,
     setClass: VueTypes.string.isRequired,
+    id: VueTypes.number.isRequired,
   },
   methods: {
     // 削除ボタンをクリックした時
-    onDelete($event, key) {
+    onDelete(event, id) {
+      console.log('delete1');
       event.stopPropagation();
-      this.$emit('delete', key);
+      console.log('checkdele');
+      this.$emit('delete', id);
     }
   }
 };
