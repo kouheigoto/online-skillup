@@ -9,4 +9,4 @@ new Vue({
   el: '#app',
   components: { App },
   template: '<app />'
-}).$mount('#app');
+});
