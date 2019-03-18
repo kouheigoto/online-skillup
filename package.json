@@ -65,6 +65,7 @@
     "stylelint-webpack-plugin": "^0.10.5",
     "vue-hot-reload-api": "^2.3.1",
     "vue-loader": "^15.5.0",
+    "vue-router": "^3.0.2",
     "vue-template-compiler": "^2.5.21",
     "webpack": "^4.28.3",
     "webpack-build-notifier": "^0.1.30",

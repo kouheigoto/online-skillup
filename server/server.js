@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 let online = 0;
 let id = 0;
-let joinList = [];
+const joinList = [];
 let index = 0;
 let mesId = 0;
 // タイムゾーンを設定する
@@ -82,6 +82,7 @@ io.on('connection', (socket) => {
       id: socket.id
     });
     io.emit('joinList', joinList);
+    io.to(socket.id).emit('socketId', socket.id);
   });
 
   // メッセージ送信
@@ -95,6 +96,33 @@ io.on('connection', (socket) => {
       time: moment().format('HH:mm'),
       id: mesId,
       socketid: socket.id
+    });
+    mesId++;
+  });
+  socket.on('secret', (id) => {
+    console.log('secretchat.id', id);
+    io.to(id).emit('ssId', socket.id);
+    io.emit('secret', id);
+  });
+  socket.on('secret2', (id) => {
+    io.emit('secret2', id);
+  });
+  socket.on('secretMessage', function(data) {
+    io.to(socket.id).emit('setClass2', 'right');
+    data.name = socket.name;
+    io.to(data.id).emit('secretMessage', {
+      name: data.name,
+      message: data.message,
+      time: moment().format('HH:mm'),
+      id: mesId,
+      socketid: socket.id
+    });
+    io.to(data.id2).emit('secretMessage', {
+      name: data.name,
+      message: data.message,
+      time: moment().format('HH:mm'),
+      id: mesId,
+      socketid: id
     });
     mesId++;
   });
