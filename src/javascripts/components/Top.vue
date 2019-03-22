@@ -1,11 +1,12 @@
 <template>
-  <div class="timeline" id="timeline">
+  <div id="timeline">
     <p class="head">
       <img class="logo" src="../../images/logo.jpg" alt="ロゴ">
       <span class="sample">テスト</span>
       <span>参加者：{{ $data.id }}人</span>
       <Joinlist :id="$data.socketId" />
     </p>
+    <div class="timeline">
     <form @submit="onSubmit" class="button">
       <input v-model="$data.mes" type="text" class="sendmessage"/>
       <button type="submit" class="send">送信</button>
@@ -14,10 +15,12 @@
     :key="post.length"
     :name="post.name"
     :message="post.mes"
-    :setClass="post.setClass"
     :time="post.time"
-    :id="post.id"
+    :mesid="post.id"
+    :id="post.socketId"
+    :socketId="$data.socketId"
     @delete="onDelete"/>
+    </div>
   </div>
 </template>
 <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
@@ -44,7 +47,11 @@ export default {
       joinList: []
     };
   },
+  beforeCreate() {
+    console.log('beforcreate');
+  },
   created() {
+    console.log('created');
     // ユーザー名入力
     socket.on('connect', () => {
       socket.emit('setName', prompt('ユーザー名入力'));
@@ -52,50 +59,28 @@ export default {
     });
     // 参加通知
     socket.on('setName', (setName) => {
-      this.name = setName;
-      this.$data.messages.push({
-        name: '',
-        mes: setName + 'が参加しました'
-      });
-    });
-    socket.on('socketId', (id) => {
-      this.$data.socketId = id;
-      console.log('joinlist $data.id', this.$data.sockedId);
+      this.name = setName.name;
+      this.$data.messages = setName.list;
+      this.$data.socketId = setName.id;
     });
     // 参加人数変更
     socket.on('onlineData', (setData) => {
       this.$data.id = setData;
+      console.log('id:', this.$data.id);
     });
     // 退室通知
-    socket.on('disconnect', (setName) => {
-      this.name = setName;
+    socket.on('disconnect', (name) => {
       this.$data.messages.push({
         name: '',
-        mes: setName + 'が退室しました'
+        mes: name + 'が退室しました'
       });
     });
-    /*
-    socket.on('disconnectuser', (index) => {
-      this.$data.joinList.splice(index, 1);
-      for (let j = 0; j < this.$data.joinList.length; j++) {
-        console.log('dis.joinList.name', j, ':', this.$data.joinList[j].name);
-        console.log('dis.joinList.id', j, ':', this.$data.joinList[j].id);
-      }
-    });
-    */
+    // メッセージ削除
     socket.on('deleteMessage', (key) => {
       const index = this.$data.messages.findIndex((mes) => mes.id === key);
       if (index !== -1) {
         this.$data.messages.splice(index, 1);
       }
-    });
-    socket.on('joinList', (list) => {
-      this.$data.joinList = list;
-    });
-    // クラスセット
-    socket.on('setClass', (data) => {
-      console.log('class', data);
-      this.$data.setClass = data;
     });
     // メッセージプッシュ
     socket.on('sendMessage', (data) => {
@@ -104,32 +89,71 @@ export default {
       /* this.$data.messages.name = data.name;
       this.$data.messages.mes = data.message;
       */
-      if (this.$data.setClass === '') this.$data.setClass = 'left';
+      if (this.$data.messages[this.$data.messages.length - 1].id !== data.id) {
       this.$data.messages.push({
         name: data.name,
         mes: data.message,
         time: data.time,
         id: data.id,
-        setClass: this.$data.setClass
+        socketId: data.socketid,
       });
-      this.$data.setClass = '';
+      this.checkSocketId();
+      console.log('check.length', this.$data.messages.length);
+      /*
       for (let i = 0; i < this.$data.messages.length; i++) {
-        /* if (this.$data.messages[i].name === '' && this.$data.messages[i].mes === '') {
+         if (this.$data.messages[i].name === '' && this.$data.messages[i].mes === '') {
           this.$data.messages[i].name = data.name;
           this.$data.messages[i].mes = data.message;
-         */ console.log('check.name', this.$data.messages[i].name);
+          console.log('check.name', this.$data.messages[i].name);
         console.log('check.mes', this.$data.messages[i].mes);
         console.log('check.setClass', this.$data.messages[i].setClass);
         console.log('check.id', this.$data.messages[i].id);
         console.log('check.length', i);
+        console.log('test', this.$data.socketId);
+        console.log('test', this.$data.socketId, ':', this.$data.messages[i].socketId);
       }
-      this.scrollDown();
+      */
+      }
     });
+    socket.on('socketId', (id) => {
+      this.$data.socketId = id;
+    })
     socket.on('ssId', (id) => {
       console.log('checksecret');
       socket.emit('secret2', id);
       this.$router.push('/secretchat');
     });
+    socket.on('checkSocketId', (id) => {
+      console.log('socket', id);
+      this.$data.socketId = id;
+    });
+    socket.on('returnTop', (list) => {
+      console.log('list => mes');
+      for (let i = 0; i < list.length; i++) {
+        console.log('check.name', list[i].name);
+        console.log('check.mes', list[i].mes);
+        console.log('check.id', list[i].id);
+        console.log('check.length', i);
+      }
+      this.$data.messages = list;
+      socket.emit('secretBack', this.$data.socketId);
+    });
+  },
+  beforeMount() {
+    console.log('beforemount');
+  },
+  mounted() {
+    console.log('mounted');
+  },
+  beforeUpdate() {
+    console.log('beforeupdate');
+  },
+  updated() {
+    console.log('updated');
+    this.scrollDown();
+  },
+  beforeDestroy() {
+    console.log('beforedestroy');
   },
   methods: {
     /**
@@ -139,7 +163,8 @@ export default {
       e.preventDefault();
       socket.emit('sendMessage', {
         name: '',
-        message: this.$data.mes
+        message: this.$data.mes,
+        id: this.$data.socketId,
       });
       this.$data.mes = '';
     },
@@ -157,6 +182,9 @@ export default {
     onNextButtonClick() {
       this.$router.push('/Joinlist');
     },
+    checkSocketId() {
+      socket.emit('checkSocketId', this.$data.socketId);
+    }
   }
 };
 </script>
@@ -171,39 +199,47 @@ export default {
 }
 
 .button {
-  position: relative;
-  height: 100px;
+  position: fixed;
+  bottom: 0;
+  height: 40px;
+  width: 100%;
 }
 
 .sendmessage {
-  position: fixed;
-  bottom: 0;
+  position: absolute;
   left: 0;
+  height: 100%;
   width: 90%;
 }
 
 .send {
-  position: fixed;
-  bottom: 0;
+  position: absolute;
   right: 0;
+  height: 100%;
   width: 10%;
 }
 
-.timeline {
+#timeline {
   position: fixed;
-  top: 0;
+  top: 100px;
   bottom: 40px;
   left: 0;
   right: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  background-color: #f2caaa;
 }
 
 .head {
   position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   widows: 100%;
   height: 100px;
+  margin-top: 0;
+  background-color: #eee;
 }
 
 </style>

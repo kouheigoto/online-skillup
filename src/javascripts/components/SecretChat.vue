@@ -1,8 +1,10 @@
 <template>
-  <div class="timeline" id="timeline">
+  <div id="timeline">
     <p class="head">
-      <button @click="$router.back()">全体チャット</button>
+      <button @click="returnTop" class="returnbuttton">全体チャット</button>
+      <span class="title">個別チャット</span>
     </p>
+    <div class="timeline">
     <form @submit="onSubmit" class="button">
       <input v-model="$data.mes" type="text" class="sendmessage"/>
       <button type="submit" class="send">送信</button>
@@ -11,10 +13,12 @@
     :key="post.length"
     :name="post.name"
     :message="post.mes"
-    :setClass="post.setClass"
     :time="post.time"
-    :id="post.id"
+    :mesid="post.id"
+    :id="post.socketId"
+    :socketId="$data.socketId"
     @delete="onDelete"/>
+    </div>
   </div>
 </template>
 <script src="https://unpkg.com/vue/dist/vue.js"></script>
@@ -51,6 +55,10 @@ export default {
     socket.on('secret2', (id) => {
       console.log('check.id2', id);
       this.$data.id2 = id;
+      this.$data.messages.push({
+        name: '',
+        mes: '接続に成功しました'
+      });
     });
     socket.on('deleteMessage', (key) => {
       const index = this.$data.messages.findIndex((mes) => mes.id === key);
@@ -73,8 +81,10 @@ export default {
         mes: data.message,
         time: data.time,
         id: data.id,
+        socketId: data.socketid,
         setClass: this.$data.setClass
       });
+      this.checkSocketId();
       this.$data.setClass = '';
       for (let i = 0; i < this.$data.messages.length; i++) {
         /* if (this.$data.messages[i].name === '' && this.$data.messages[i].mes === '') {
@@ -87,6 +97,16 @@ export default {
         console.log('check.length', i);
       }
       this.scrollDown();
+    });
+    socket.on('checkSocketId', (id) => {
+      console.log('socket', id);
+      this.$data.socketId = id;
+    });
+    socket.on('discon', (id) => {
+      this.$data.messages.push({
+        name: '',
+        mes: '退室しました'
+      });
     });
   },
   methods: {
@@ -114,6 +134,14 @@ export default {
       const element = document.getElementById('timeline');
       element.scrollTop = element.scrollHeight;
     },
+    returnTop() {
+      console.log('secret=>top');
+      socket.emit('returnTop', this.$data.socketId);
+      this.$router.push('/');
+    },
+    checkSocketId() {
+      socket.emit('checkSocketId', this.$data.socketId);
+    }
   }
 };
 </script>
@@ -130,37 +158,58 @@ export default {
 .button {
   position: fixed;
   bottom: 0;
+  height: 40px;
+  width: 100%;
 }
 
 .sendmessage {
-  position: fixed;
-  bottom: 0;
+  position: absolute;
   left: 0;
+  height: 100%;
   width: 90%;
 }
 
 .send {
-  position: fixed;
-  bottom: 0;
+  position: absolute;
   right: 0;
+  height: 100%;
   width: 10%;
 }
 
-.timeline {
+#timeline {
   position: fixed;
-  top: 0;
+  top: 40px;
   bottom: 40px;
   left: 0;
   right: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  background-color: #737;
 }
 
 .head {
   position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin-top: 0;
+  margin-bottom: 0;
   widows: 100%;
-  height: 100px;
+  height: 40px;
+  background-color: #eee;
+}
+
+.returnbutton {
+  height: 100%;
+  width: 100px;
+}
+
+.title {
+  position: absolute;
+  top: 10px;
+  left: 45%;
+  font-size: 20px;
 }
 
 </style>

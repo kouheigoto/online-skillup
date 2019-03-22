@@ -6,6 +6,8 @@ const cors = require('cors');
 let online = 0;
 let id = 0;
 const joinList = [];
+let chatList = [];
+const secretList = [];
 let index = 0;
 let mesId = 0;
 // タイムゾーンを設定する
@@ -49,6 +51,13 @@ io.on('connection', (socket) => {
     console.log('disconnected:', socket.id);
     online--;
     io.emit('onlineData', online);
+    chatList.push({
+      name: '',
+      mes: socket.name + 'が退室しました',
+    });
+    if (joinList.length > 100) {
+      joinList.shift();
+    }
     io.emit('disconnect', socket.name);
     index = joinList.findIndex((list) => list.id === socket.id);
     console.log('socket.id', socket.id);
@@ -62,6 +71,10 @@ io.on('connection', (socket) => {
   // メッセージ削除
   socket.on('deleteMessage', (key) => {
     console.log('key', key);
+    const index = chatList.findIndex((id) => id.id === key);
+    if (index !== -1) {
+      chatList.splice(index, 1);
+    }
     io.emit('deleteMessage', key);
   });
 
@@ -76,7 +89,18 @@ io.on('connection', (socket) => {
     console.log('online', online);
     socket.name = name;
     io.emit('onlineData', online);
-    io.emit('setName', (name));
+    chatList.push({
+      name: '',
+      mes: socket.name + 'が参加しました',
+    });
+    if (chatList.length > 100) {
+      chatList.shift();
+    }
+    io.emit('setName', {
+      name: socket.name,
+      list: chatList,
+      id: socket.id,
+    });
     joinList.push({
       name: socket.name,
       id: socket.id
@@ -90,6 +114,16 @@ io.on('connection', (socket) => {
     console.log('b.mes:', data.message);
     io.to(socket.id).emit('setClass', 'right');
     data.name = socket.name;
+    chatList.push({
+      name: data.name,
+      mes: data.message,
+      time: moment().format('HH:mm'),
+      id: mesId,
+      socketId: socket.id,
+    });
+    if (chatList.length > 100) {
+      chatList.shift();
+    }
     io.emit('sendMessage', {
       name: data.name,
       message: data.message,
@@ -101,8 +135,19 @@ io.on('connection', (socket) => {
   });
   socket.on('secret', (id) => {
     console.log('secretchat.id', id);
-    io.to(id).emit('ssId', socket.id);
-    io.emit('secret', id);
+    if (secretList.findIndex((mes) => mes.id === id.id) === -1) {
+      secretList.push({
+        id: id.id,
+      });
+      if (secretList.findIndex((mes) => mes.id === id.myId) === -1) {
+        secretList.push({
+          id: id.myId,
+        });
+        io.to(socket.id).emit('ssOk', id.id);
+        io.to(id.id).emit('ssId', socket.id);
+        io.emit('secret', id.id);
+      }
+    }
   });
   socket.on('secret2', (id) => {
     io.emit('secret2', id);
@@ -122,8 +167,25 @@ io.on('connection', (socket) => {
       message: data.message,
       time: moment().format('HH:mm'),
       id: mesId,
-      socketid: id
+      socketid: socket.id
     });
     mesId++;
+  });
+  socket.on('checkSocketId', (id) => {
+    io.to(socket.id).emit('checkSocketId', socket.id);
+  });
+  socket.on('returnTop', (id) => {
+    console.log('returntop');
+    io.emit('discon', id);
+    io.to(socket.id).emit('onlineData', online);
+    io.to(socket.id).emit('joinList', joinList);
+    io.to(socket.id).emit('socketId', socket.id);
+    io.to(socket.id).emit('returnTop', chatList);
+  });
+  socket.on('secretBack', (id) => {
+    index = secretList.findIndex((socketId) => socketId.id === id);
+    if (index !== -1) {
+      secretList.splice(index, 1);
+    }
   });
 });

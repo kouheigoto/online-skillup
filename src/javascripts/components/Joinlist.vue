@@ -28,9 +28,10 @@ export default {
   created() {
     socket.on('joinList', (list) => {
       this.$data.joinList = list;
+      console.log('join', this.$data.joinList[0].name);
     });
-    document.querySelector('button').addEventListener('click', function() {
-      document.querySelector('li').classList.toggle('is-open');
+    socket.on('ssOk', (id) => {
+      this.$router.push('/secretchat');
     });
   },
   methods: {
@@ -38,8 +39,10 @@ export default {
       const index = this.$data.joinList.findIndex((mes) => mes.id === id);
       console.log('SendSecret', this.$data.joinList[index].name);
       console.log('SendSecret.id', id);
-      socket.emit('secret', id);
-      this.$router.push('/secretchat');
+      socket.emit('secret', {
+        id: id,
+        myId: this.$props.id,
+      });
     },
   },
 };
@@ -49,16 +52,19 @@ export default {
 .accbox {
   margin: 2em 0;
   padding: 0;
-  max-width: 400px;
+  width: 300px;
+  position: absolute;
+  top: 0;
+  left: 200px;
 }
 
 .accbox label {
   display: block;
   margin: 1.5px 0;
   padding: 13px 12px;
-  color: #ffba47;
+  color: #d5d;
   font-weight: bold;
-  background: #fff2cc;
+  background: #99e;
   cursor: pointer;
   transition: all 0.5s;
 }
@@ -68,7 +74,7 @@ export default {
 }
 
 .accbox label:hover {
-  background: #ffe9a9;
+  background: #55f;
 }
 
 .accbox .accshow {

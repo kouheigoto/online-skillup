@@ -1,10 +1,14 @@
 <template>
   <div>
     <ul v-if="name === ''"><li class="systemMessage">{{ message }}</li></ul>
-  <ul v-else><li :class="setClass"><p class="name">{{ name }}</p>
+  <ul v-else-if="id === socketId"><li class="right"><p class="name">{{ name }}</p>
   <p class="message">{{ message }}</p>
   <p class="time">{{ time }}</p>
-  <p v-if="setClass === 'right'"><button @click="onDelete($event, id)">削除</button></p></li></ul></div>
+  <p><button @click="onDelete($event, mesid)">削除</button></p></li></ul>
+  <ul v-else><li class="left"><p class="name">{{ name }}</p>
+  <p class="message">{{ message }}</p>
+  <p class="time">{{ time }}</p></li></ul>
+  </div>
 </template>
 
 <script>
@@ -15,16 +19,17 @@ export default {
     name: VueTypes.string.isRequired,
     message: VueTypes.string.isRequired,
     time: VueTypes.string.isRequired,
-    setClass: VueTypes.string.isRequired,
-    id: VueTypes.number.isRequired,
+    mesid: VueTypes.number.isRequired,
+    id: VueTypes.string.isRequired,
+    socketId: VueTypes.string.isRequired,
   },
   methods: {
     // 削除ボタンをクリックした時
-    onDelete(event, id) {
+    onDelete(event, mesid) {
       console.log('delete1');
       event.stopPropagation();
       console.log('checkdele');
-      this.$emit('delete', id);
+      this.$emit('delete', mesid);
     }
   }
 };
@@ -35,6 +40,7 @@ export default {
 .systemMessage {
   list-style: none;
   text-align: center;
+  color: #666;
 }
 
 .right {
@@ -46,7 +52,7 @@ export default {
   text-align: left;
   display: inline-block;
   border-radius: 20px;
-  background: #0f0;
+  background: rgb(123, 236, 123);
   width: 400px;
   padding-left: 10px;
   padding-right: 1px;
@@ -54,7 +60,8 @@ export default {
 }
 
 .right .name {
-  margin-right: 360px;
+  text-align: left;
+  padding-left: 70%;
 }
 
 .left {
@@ -65,7 +72,7 @@ export default {
 .left .message {
   border-radius: 20px;
   display: inline-block;
-  background: #0f0;
+  background: #fff;
   width: 400px;
   padding-left: 10px;
   padding-right: 1px;
