@@ -6,10 +6,12 @@ const cors = require('cors');
 let online = 0;
 let id = 0;
 const joinList = [];
-let chatList = [];
+const chatList = [];
 const secretList = [];
+const dataList = [];
 let index = 0;
 let mesId = 0;
+let loginerror = '';
 // タイムゾーンを設定する
 const moment = require('moment');
 require('moment-timezone');
@@ -46,6 +48,79 @@ const io = require('socket.io')(server, { origins: '*:*' });
 io.on('connection', (socket) => {
   console.log('connected:', socket.id);
 
+  // 新規ログイン
+  socket.on('newlogin', (data) => {
+    const index = dataList.findIndex((name) => name.name === data.name);
+    const index2 = dataList.findIndex((pass) => pass.password === data.password);
+    console.log('index', index, 'index2', index2);
+    for (let i = 0; i < dataList.length; i++) {
+      console.log(dataList[i].name);
+      console.log(dataList.password);
+    }
+    if (data.name !== '') {
+      if (data.password !== '') {
+        if (dataList.findIndex((name) => name.name === data.name) === -1) {
+          console.log('name');
+          if (dataList.findIndex((pass) => pass.password === data.password) === -1) {
+            console.log('pass');
+            dataList.push({
+              name: data.name,
+              password: data.password,
+              color: data.color,
+            });
+            console.log('loginOk');
+            socket.emit('newloginOk', data.name);
+          } else {
+            loginerror = 'パスワードを変更してください';
+            socket.emit('loginerror', loginerror);
+          }
+        } else {
+          loginerror = 'この名前は既に使われています';
+          socket.emit('loginerror', loginerror);
+        }
+      } else {
+        loginerror = 'パスワードが空です';
+        socket.emit('loginerror', loginerror);
+      }
+    } else {
+      loginerror = '名前が空です';
+      socket.emit('loginerror', loginerror);
+    }
+  });
+
+  // ログイン
+  socket.on('login', (data) => {
+    console.log('loginck');
+    if (data.name !== '') {
+      if (data.password !== '') {
+        index = dataList.findIndex((name) => name.name === data.name);
+        if (index !== -1) {
+          if (dataList[index].password === data.password) {
+            if (joinList.findIndex((name) => name.name === data.name) === -1) {
+              console.log('loginOk');
+              socket.emit('loginOk', dataList[index].color);
+            } else {
+              loginerror = '既にログインしています';
+              socket.emit('loginerror', loginerror);
+            }
+          } else {
+            loginerror = 'パスワードが間違ってます';
+            socket.emit('loginerror', loginerror);
+          }
+        } else {
+          loginerror = 'この名前は登録されてません';
+          socket.emit('loginerror', loginerror);
+        }
+      } else {
+        loginerror = 'パスワードが空です';
+        socket.emit('loginerror', loginerror);
+      }
+    } else {
+      loginerror = '名前が空です';
+      socket.emit('loginerror', loginerror);
+    }
+  });
+
   // 切断時
   socket.on('disconnect', () => {
     console.log('disconnected:', socket.id);
@@ -55,8 +130,8 @@ io.on('connection', (socket) => {
       name: '',
       mes: socket.name + 'が退室しました',
     });
-    if (joinList.length > 100) {
-      joinList.shift();
+    if (chatList.length > 100) {
+      chatList.shift();
     }
     io.emit('disconnect', socket.name);
     index = joinList.findIndex((list) => list.id === socket.id);
@@ -79,15 +154,12 @@ io.on('connection', (socket) => {
   });
 
   // ユーザの参加
-  socket.on('setName', function(name) {
+  socket.on('setName', (name) => {
     online++;
-    if (!name) {
-      name = '匿名' + id;
-      id++;
-    };
-    console.log('setName', name);
+    console.log('setName', name.name);
     console.log('online', online);
-    socket.name = name;
+    socket.name = name.name;
+    socket.color = name.color;
     io.emit('onlineData', online);
     chatList.push({
       name: '',
@@ -100,6 +172,7 @@ io.on('connection', (socket) => {
       name: socket.name,
       list: chatList,
       id: socket.id,
+      color: socket.color,
     });
     joinList.push({
       name: socket.name,
@@ -120,6 +193,7 @@ io.on('connection', (socket) => {
       time: moment().format('HH:mm'),
       id: mesId,
       socketId: socket.id,
+      color: socket.color,
     });
     if (chatList.length > 100) {
       chatList.shift();
@@ -129,10 +203,13 @@ io.on('connection', (socket) => {
       message: data.message,
       time: moment().format('HH:mm'),
       id: mesId,
-      socketid: socket.id
+      socketid: socket.id,
+      color: socket.color,
     });
     mesId++;
   });
+
+  // シークレット接続チェック
   socket.on('secret', (id) => {
     console.log('secretchat.id', id);
     if (secretList.findIndex((mes) => mes.id === id.id) === -1) {
@@ -149,9 +226,13 @@ io.on('connection', (socket) => {
       }
     }
   });
+
+  // シークレットチャットへIdを渡す
   socket.on('secret2', (id) => {
     io.emit('secret2', id);
   });
+
+  // シークレットチャットのメッセージ送信
   socket.on('secretMessage', function(data) {
     io.to(socket.id).emit('setClass2', 'right');
     data.name = socket.name;
@@ -160,28 +241,42 @@ io.on('connection', (socket) => {
       message: data.message,
       time: moment().format('HH:mm'),
       id: mesId,
-      socketid: socket.id
+      socketid: socket.id,
+      color: socket.color,
     });
     io.to(data.id2).emit('secretMessage', {
       name: data.name,
       message: data.message,
       time: moment().format('HH:mm'),
       id: mesId,
-      socketid: socket.id
+      socketid: socket.id,
+      color: socket.color,
     });
     mesId++;
   });
+
+  // socketIdのチェック
   socket.on('checkSocketId', (id) => {
     io.to(socket.id).emit('checkSocketId', socket.id);
   });
+
+  // nameのチェック
+  socket.on('checkName', (name) => {
+    io.to(socket.id).emit('checkName', socket.name);
+  });
+
+  // トップへ戻る
   socket.on('returnTop', (id) => {
     console.log('returntop');
     io.emit('discon', id);
     io.to(socket.id).emit('onlineData', online);
     io.to(socket.id).emit('joinList', joinList);
     io.to(socket.id).emit('socketId', socket.id);
+    io.to(socket.id).emit('checkName', socket.name);
     io.to(socket.id).emit('returnTop', chatList);
   });
+
+  // シークレットチャットを抜けたことを保存
   socket.on('secretBack', (id) => {
     index = secretList.findIndex((socketId) => socketId.id === id);
     if (index !== -1) {

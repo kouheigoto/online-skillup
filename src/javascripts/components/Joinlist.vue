@@ -6,7 +6,7 @@
       <ul>
         <li v-for="list in $data.joinList"
         :key=list.length>{{ list.name }}
-        <button v-if="list.id !== id" @click="secret($event, list.id)">個人チャット</button>
+        <button v-if="list.id !== $data.socketid" @click="secret($event, list.id)">個人チャット</button>
         </li>
       </ul>
     </div>
@@ -23,18 +23,27 @@ export default {
   data() {
     return {
       joinList: [],
+      socketid: '',
     };
   },
   created() {
+    // joinList生成
     socket.on('joinList', (list) => {
       this.$data.joinList = list;
+      socket.emit('checkSocketId', this.$data.socketId);
       console.log('join', this.$data.joinList[0].name);
     });
+    socket.on('checkSocketId', (id) => {
+      console.log('socket', id);
+      this.$data.socketid = id;
+    });
+    // シークレットチャット接続
     socket.on('ssOk', (id) => {
       this.$router.push('/secretchat');
     });
   },
   methods: {
+    // シークレットチャット接続
     secret(event, id) {
       const index = this.$data.joinList.findIndex((mes) => mes.id === id);
       console.log('SendSecret', this.$data.joinList[index].name);

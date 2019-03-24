@@ -1,8 +1,10 @@
 <template>
   <div id="timeline">
     <p class="head">
-      <button @click="returnTop" class="returnbuttton">全体チャット</button>
-      <span class="title">個別チャット</span>
+      <img class="logo" src="../../images/logo.jpg" alt="ロゴ">
+      <span class="sample">テスト</span>
+      <span>参加者：{{ $data.id }}人</span>
+      <Joinlist :id="$data.socketId" />
     </p>
     <div class="timeline">
     <form @submit="onSubmit" class="button">
@@ -23,7 +25,6 @@
     </div>
   </div>
 </template>
-<script src="https://unpkg.com/vue/dist/vue.js"></script>
 <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
 <script>
 import socket from '../utils/socket';
@@ -34,6 +35,7 @@ import Joinlist from '../components/Joinlist';
 export default {
   components: {
     MyComponent,
+    Joinlist,
   },
   data() {
     return {
@@ -45,23 +47,38 @@ export default {
       setClass: '',
       socketId: '',
       joinList: [],
-      id: '',
-      id2: '',
+      color: '',
     };
   },
+  beforeCreate() {
+    console.log('beforcreate');
+  },
   created() {
-    // id確認
-    socket.on('secret', (id) => {
-      console.log('check.id', id);
-      this.$data.id = id;
+    console.log('created');
+    // ユーザー名入力
+    /* socket.on('connect', () => {
+      socket.emit('setName', prompt('ユーザー名入力'));
+      console.log('connected!');
     });
-    // 接続確認
-    socket.on('secret2', (id) => {
-      console.log('check.id2', id);
-      this.$data.id2 = id;
+    */
+    // 参加通知
+    socket.on('setName', (setName) => {
+      this.$data.name = setName.name;
+      this.$data.messages = setName.list;
+      this.$data.socketId = setName.id;
+      this.color = setName.color;
+      console.log('color', this.$data.color);
+    });
+    // 参加人数変更
+    socket.on('onlineData', (setData) => {
+      this.$data.id = setData;
+      console.log('id:', this.$data.id);
+    });
+    // 退室通知
+    socket.on('disconnect', (name) => {
       this.$data.messages.push({
         name: '',
-        mes: '接続に成功しました'
+        mes: name + 'が退室しました'
       });
     });
     // メッセージ削除
@@ -72,10 +89,13 @@ export default {
       }
     });
     // メッセージプッシュ
-    socket.on('secretMessage', (data) => {
+    socket.on('sendMessage', (data) => {
       console.log('name', data.name);
       console.log('mes', data.message);
-      if (this.$data.setClass === '') this.$data.setClass = 'left';
+      /* this.$data.messages.name = data.name;
+      this.$data.messages.mes = data.message;
+      */
+      if (this.$data.messages[this.$data.messages.length - 1].id !== data.id) {
       this.$data.messages.push({
         name: data.name,
         mes: data.message,
@@ -86,20 +106,34 @@ export default {
       });
       this.checkSocketId();
       this.checkName();
-      this.$data.setClass = '';
+      console.log('check.length', this.$data.messages.length);
+      /*
       for (let i = 0; i < this.$data.messages.length; i++) {
-        /* if (this.$data.messages[i].name === '' && this.$data.messages[i].mes === '') {
+         if (this.$data.messages[i].name === '' && this.$data.messages[i].mes === '') {
           this.$data.messages[i].name = data.name;
           this.$data.messages[i].mes = data.message;
-         */ console.log('check.name', this.$data.messages[i].name);
+          console.log('check.name', this.$data.messages[i].name);
         console.log('check.mes', this.$data.messages[i].mes);
         console.log('check.setClass', this.$data.messages[i].setClass);
         console.log('check.id', this.$data.messages[i].id);
         console.log('check.length', i);
+        console.log('test', this.$data.socketId);
+        console.log('test', this.$data.socketId, ':', this.$data.messages[i].socketId);
       }
-      this.scrollDown();
+      */
+      }
     });
-    // socketId確認
+    // socketId取得
+    socket.on('socketId', (id) => {
+      this.$data.socketId = id;
+    })
+    // シークレットチャット接続確認
+    socket.on('ssId', (id) => {
+      console.log('checksecret');
+      socket.emit('secret2', id);
+      this.$router.push('/secretchat');
+    });
+    // socketId更新
     socket.on('checkSocketId', (id) => {
       console.log('socket', id);
       this.$data.socketId = id;
@@ -107,15 +141,36 @@ export default {
     socket.on('checkName', (name) => {
       console.log('name', name);
       this.$data.name = name;
-      this.checkName();
+    })
+    // シークレットチャットから戻ってきたことの確認
+    socket.on('returnTop', (list) => {
+      console.log('list => mes');
+      for (let i = 0; i < list.length; i++) {
+        console.log('check.name', list[i].name);
+        console.log('check.mes', list[i].mes);
+        console.log('check.id', list[i].id);
+        console.log('check.length', i);
+      }
+      this.$data.messages = list;
+      socket.emit('secretBack', this.$data.socketId);
     });
-    // 退室通知
-    socket.on('discon', (id) => {
-      this.$data.messages.push({
-        name: '',
-        mes: '退室しました'
-      });
-    });
+  },
+  beforeMount() {
+    console.log('beforemount');
+  },
+  mounted() {
+    console.log('mounted');
+  },
+  beforeUpdate() {
+    console.log('beforeupdate');
+  },
+  updated() {
+    console.log('updated');
+    this.scrollDown();
+    this.checkName();
+  },
+  beforeDestroy() {
+    console.log('beforedestroy');
   },
   methods: {
     /**
@@ -123,11 +178,11 @@ export default {
      */
     onSubmit(e) {
       e.preventDefault();
-      socket.emit('secretMessage', {
+      socket.emit('sendMessage', {
         name: '',
         message: this.$data.mes,
-        id: this.$data.id,
-        id2: this.$data.id2,
+        id: this.$data.socketId,
+        color: this.$data.color,
       });
       this.$data.mes = '';
     },
@@ -142,13 +197,7 @@ export default {
       const element = document.getElementById('timeline');
       element.scrollTop = element.scrollHeight;
     },
-    // トップへ戻る
-    returnTop() {
-      console.log('secret=>top');
-      socket.emit('returnTop', this.$data.socketId);
-      this.$router.push('/Main');
-    },
-    // socketid確認
+    // socketId確認
     checkSocketId() {
       socket.emit('checkSocketId', this.$data.socketId);
     },
@@ -191,14 +240,14 @@ export default {
 
 #timeline {
   position: fixed;
-  top: 40px;
+  top: 100px;
   bottom: 40px;
   left: 0;
   right: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  background-color: #737;
+  background-color: #000;
 }
 
 .head {
@@ -206,23 +255,10 @@ export default {
   top: 0;
   left: 0;
   right: 0;
-  margin-top: 0;
-  margin-bottom: 0;
   widows: 100%;
-  height: 40px;
+  height: 100px;
+  margin-top: 0;
   background-color: #eee;
-}
-
-.returnbutton {
-  height: 100%;
-  width: 100px;
-}
-
-.title {
-  position: absolute;
-  top: 10px;
-  left: 45%;
-  font-size: 20px;
 }
 
 </style>

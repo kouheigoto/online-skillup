@@ -1,12 +1,12 @@
 <template>
   <div>
     <ul v-if="name === ''"><li class="systemMessage">{{ message }}</li></ul>
-  <ul v-else-if="id === socketId"><li class="right"><p class="name">{{ name }}</p>
-  <p class="message">{{ message }}</p>
+  <ul v-else-if="name === keyName"><li class="right"><p class="name">{{ name }}</p>
+  <p class="message" :class="color">{{ message }}</p>
   <p class="time">{{ time }}</p>
   <p><button @click="onDelete($event, mesid)">削除</button></p></li></ul>
   <ul v-else><li class="left"><p class="name">{{ name }}</p>
-  <p class="message">{{ message }}</p>
+  <p class="message" :class="color">{{ message }}</p>
   <p class="time">{{ time }}</p></li></ul>
   </div>
 </template>
@@ -21,7 +21,9 @@ export default {
     time: VueTypes.string.isRequired,
     mesid: VueTypes.number.isRequired,
     id: VueTypes.string.isRequired,
+    keyName: VueTypes.string.isRequired,
     socketId: VueTypes.string.isRequired,
+    color: VueTypes.string.isRequired,
   },
   methods: {
     // 削除ボタンをクリックした時
@@ -40,7 +42,7 @@ export default {
 .systemMessage {
   list-style: none;
   text-align: center;
-  color: #666;
+  color: #fff;
 }
 
 .right {
@@ -52,16 +54,33 @@ export default {
   text-align: left;
   display: inline-block;
   border-radius: 20px;
-  background: rgb(123, 236, 123);
   width: 400px;
   padding-left: 10px;
   padding-right: 1px;
   font-size: 1.3em;
+  color: #fff;
+}
+
+.red {
+  background-color: $red;
+}
+
+.blue {
+  background-color: $blue;
+}
+
+.yellow {
+  background-color: $yellow;
+}
+
+.green {
+  background-color: $green;
 }
 
 .right .name {
   text-align: left;
   padding-left: 70%;
+  color: #fff;
 }
 
 .left {
@@ -72,15 +91,20 @@ export default {
 .left .message {
   border-radius: 20px;
   display: inline-block;
-  background: #fff;
   width: 400px;
   padding-left: 10px;
   padding-right: 1px;
   font-size: 1.3em;
+  color: #fff;
+}
+
+.left .name {
+  color: #fff;
 }
 
 .time {
   margin-left: 360px;
+  color: #fff;
 }
 
 p {
