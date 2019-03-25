@@ -39,12 +39,9 @@ export default {
   },
   data() {
     return {
-      message: '',
-      message2: '',
       messages: [],
       name: '',
       mes: '',
-      setClass: '',
       socketId: '',
       joinList: [],
       color: '',
@@ -107,20 +104,6 @@ export default {
       this.checkSocketId();
       this.checkName();
       console.log('check.length', this.$data.messages.length);
-      /*
-      for (let i = 0; i < this.$data.messages.length; i++) {
-         if (this.$data.messages[i].name === '' && this.$data.messages[i].mes === '') {
-          this.$data.messages[i].name = data.name;
-          this.$data.messages[i].mes = data.message;
-          console.log('check.name', this.$data.messages[i].name);
-        console.log('check.mes', this.$data.messages[i].mes);
-        console.log('check.setClass', this.$data.messages[i].setClass);
-        console.log('check.id', this.$data.messages[i].id);
-        console.log('check.length', i);
-        console.log('test', this.$data.socketId);
-        console.log('test', this.$data.socketId, ':', this.$data.messages[i].socketId);
-      }
-      */
       }
     });
     // socketId取得

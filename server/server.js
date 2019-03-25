@@ -68,7 +68,7 @@ io.on('connection', (socket) => {
               password: data.password,
               color: data.color,
             });
-            console.log('loginOk');
+            console.log('loginOk', socket.id);
             socket.emit('newloginOk', data.name);
           } else {
             loginerror = 'パスワードを変更してください';
@@ -185,7 +185,6 @@ io.on('connection', (socket) => {
   // メッセージ送信
   socket.on('sendMessage', function(data) {
     console.log('b.mes:', data.message);
-    io.to(socket.id).emit('setClass', 'right');
     data.name = socket.name;
     chatList.push({
       name: data.name,
@@ -234,7 +233,6 @@ io.on('connection', (socket) => {
 
   // シークレットチャットのメッセージ送信
   socket.on('secretMessage', function(data) {
-    io.to(socket.id).emit('setClass2', 'right');
     data.name = socket.name;
     io.to(data.id).emit('secretMessage', {
       name: data.name,

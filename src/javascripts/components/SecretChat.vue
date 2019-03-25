@@ -75,7 +75,6 @@ export default {
     socket.on('secretMessage', (data) => {
       console.log('name', data.name);
       console.log('mes', data.message);
-      if (this.$data.setClass === '') this.$data.setClass = 'left';
       this.$data.messages.push({
         name: data.name,
         mes: data.message,
@@ -88,10 +87,7 @@ export default {
       this.checkName();
       this.$data.setClass = '';
       for (let i = 0; i < this.$data.messages.length; i++) {
-        /* if (this.$data.messages[i].name === '' && this.$data.messages[i].mes === '') {
-          this.$data.messages[i].name = data.name;
-          this.$data.messages[i].mes = data.message;
-         */ console.log('check.name', this.$data.messages[i].name);
+        console.log('check.name', this.$data.messages[i].name);
         console.log('check.mes', this.$data.messages[i].mes);
         console.log('check.setClass', this.$data.messages[i].setClass);
         console.log('check.id', this.$data.messages[i].id);

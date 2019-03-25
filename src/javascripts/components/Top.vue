@@ -27,15 +27,8 @@
 <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
 <script>
 import socket from '../utils/socket';
-// components
-import MyComponent from '../components/MyComponent.vue';
-import Joinlist from '../components/Joinlist';
 
 export default {
-  components: {
-    MyComponent,
-    Joinlist,
-  },
   data() {
     return {
       mes: '',
