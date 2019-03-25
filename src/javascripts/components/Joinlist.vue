@@ -37,6 +37,7 @@ export default {
       console.log('socket', id);
       this.$data.socketid = id;
     });
+
     // シークレットチャット接続
     socket.on('ssOk', (id) => {
       this.$router.push('/secretchat');

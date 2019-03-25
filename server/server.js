@@ -4,7 +4,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 let online = 0;
-let id = 0;
 const joinList = [];
 const chatList = [];
 const secretList = [];
@@ -130,7 +129,7 @@ io.on('connection', (socket) => {
       name: '',
       mes: socket.name + 'が退室しました',
     });
-    if (chatList.length > 100) {
+    if (chatList.length > 200) {
       chatList.shift();
     }
     io.emit('disconnect', socket.name);
@@ -165,7 +164,7 @@ io.on('connection', (socket) => {
       name: '',
       mes: socket.name + 'が参加しました',
     });
-    if (chatList.length > 100) {
+    if (chatList.length > 200) {
       chatList.shift();
     }
     io.emit('setName', {
@@ -194,7 +193,7 @@ io.on('connection', (socket) => {
       socketId: socket.id,
       color: socket.color,
     });
-    if (chatList.length > 100) {
+    if (chatList.length > 200) {
       chatList.shift();
     }
     io.emit('sendMessage', {
@@ -274,7 +273,7 @@ io.on('connection', (socket) => {
     io.to(socket.id).emit('returnTop', chatList);
   });
 
-  // シークレットチャットを抜けたことを保存
+  // シークレットチャットから抜けたことを保存
   socket.on('secretBack', (id) => {
     index = secretList.findIndex((socketId) => socketId.id === id);
     if (index !== -1) {

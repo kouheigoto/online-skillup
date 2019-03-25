@@ -48,7 +48,7 @@ export default {
       console.log('connected!');
     });
 
-    // ログインチェック
+    // 新規ログインチェック
     socket.on('newloginOk', (name) => {
       console.log('loginOk')
       this.$router.push('/Main');
@@ -60,6 +60,8 @@ export default {
       this.$data.password = '';
       this.$data.color = 'green';
     });
+
+    // ログインチェック
     socket.on('loginOk', (color) => {
       this.$router.push('/main');
       socket.emit('setName', {
@@ -69,7 +71,9 @@ export default {
       this.$data.mes = '';
       this.$data.password = '';
       this.$data.color = 'green';
-    })
+    });
+
+    // エラー取得
     socket.on('loginerror', (message) => {
       console.log('loginerror', message);
       this.$data.errorList.push({

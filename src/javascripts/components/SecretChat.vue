@@ -55,6 +55,7 @@ export default {
       console.log('check.id', id);
       this.$data.id = id;
     });
+
     // 接続確認
     socket.on('secret2', (id) => {
       console.log('check.id2', id);
@@ -64,6 +65,7 @@ export default {
         mes: '接続に成功しました'
       });
     });
+
     // メッセージ削除
     socket.on('deleteMessage', (key) => {
       const index = this.$data.messages.findIndex((mes) => mes.id === key);
@@ -71,6 +73,7 @@ export default {
         this.$data.messages.splice(index, 1);
       }
     });
+
     // メッセージプッシュ
     socket.on('secretMessage', (data) => {
       console.log('name', data.name);
@@ -95,16 +98,20 @@ export default {
       }
       this.scrollDown();
     });
+
     // socketId確認
     socket.on('checkSocketId', (id) => {
       console.log('socket', id);
       this.$data.socketId = id;
     });
+
+    // name確認
     socket.on('checkName', (name) => {
       console.log('name', name);
       this.$data.name = name;
       this.checkName();
     });
+
     // 退室通知
     socket.on('discon', (id) => {
       this.$data.messages.push({
@@ -148,6 +155,7 @@ export default {
     checkSocketId() {
       socket.emit('checkSocketId', this.$data.socketId);
     },
+    // name確認
     checkName() {
       socket.emit('checkName', this.$data.name);
     }
