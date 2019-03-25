@@ -1,7 +1,7 @@
 <template>
   <div>
     <ul v-if="name === ''"><li class="systemMessage">{{ message }}</li></ul>
-  <ul v-else-if="name === keyName"><li class="right"><p class="name">{{ name }}</p>
+  <ul v-else-if="name === keyName"><li class="right">
   <p class="message" :class="color">{{ message }}</p>
   <p class="time">{{ time }}</p>
   <p><button @click="onDelete($event, mesid)">削除</button></p></li></ul>
@@ -75,12 +75,6 @@ export default {
 
 .green {
   background-color: $green;
-}
-
-.right .name {
-  text-align: left;
-  padding-left: 70%;
-  color: #fff;
 }
 
 .left {
