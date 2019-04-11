@@ -127,7 +127,7 @@ io.on('connection', (socket) => {
     io.emit('onlineData', online);
     chatList.push({
       name: '',
-      mes: socket.name + 'が退室しました',
+      message: socket.name + 'が退室しました',
     });
     if (chatList.length > 200) {
       chatList.shift();
@@ -162,7 +162,7 @@ io.on('connection', (socket) => {
     io.emit('onlineData', online);
     chatList.push({
       name: '',
-      mes: socket.name + 'が参加しました',
+      message: socket.name + 'が参加しました',
     });
     if (chatList.length > 200) {
       chatList.shift();
@@ -187,7 +187,7 @@ io.on('connection', (socket) => {
     data.name = socket.name;
     chatList.push({
       name: data.name,
-      mes: data.message,
+      message: data.message,
       time: moment().format('HH:mm'),
       id: mesId,
       socketId: socket.id,

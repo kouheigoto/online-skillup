@@ -89,13 +89,6 @@ export default {
       this.checkSocketId();
       this.checkName();
       this.$data.setClass = '';
-      for (let i = 0; i < this.$data.messages.length; i++) {
-        console.log('check.name', this.$data.messages[i].name);
-        console.log('check.mes', this.$data.messages[i].mes);
-        console.log('check.setClass', this.$data.messages[i].setClass);
-        console.log('check.id', this.$data.messages[i].id);
-        console.log('check.length', i);
-      }
       this.scrollDown();
     });
 

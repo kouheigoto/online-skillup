@@ -2,7 +2,7 @@
   <div>
     <p>
       <img class="logo" src="../../images/logo.jpg" alt="ロゴ">
-      <span>新規参加</span>
+      <span class="login">ログイン</span>
     </p>
     <p>
       <ul>
@@ -11,14 +11,19 @@
     </p>
     <form @submit="onSubmit" name="login" class="button">
       <input type="checkbox" name="status">新規参加
-      <p>{{ '名前:' }}<input v-model="$data.mes" type="text" class="sendmessage"/></p>
-      <p>{{ 'パスワード:' }}<input v-model="$data.password" type="text"/></p>
+      <a>←新規参加はここをクリック</a>
+      <p>{{ '名前:' }}<input v-model="$data.name" type="text" class="sendmessage"/></p>
+      <p>{{ 'パスワード:' }}<input v-model="$data.password" type="password"/></p>
       <p>
         <span>色選択(新規参加者のみ選択):</span>
-        <input type="radio" name="color" value="green"><a class="green">緑</a>
-        <input type="radio" name="color" value="red"><a class="red">赤</a>
-        <input type="radio" name="color" value="blue"><a class="blue">青</a>
-        <input type="radio" name="color" value="yellow"><a class="yellow">黄色</a>
+        <input type="radio" name="color" value="green" id="green">
+        <a class="green">緑</a>
+        <input type="radio" name="color" value="red" id="red">
+        <a class="red">赤</a>
+        <input type="radio" name="color" value="blue" id="blue">
+        <a class="blue">青</a>
+        <input type="radio" name="color" value="yellow" id="yellow">
+        <a class="yellow">黄色</a>
       </p>
       <button type="submit" class="send">新規参加</button>
     </form>
@@ -31,15 +36,12 @@ import socket from '../utils/socket';
 export default {
   data() {
     return {
-      mes: '',
+      name: '',
       socketId: '',
       password: '',
       color: 'green',
       errorList: [],
     };
-  },
-  beforeCreate() {
-    console.log('beforcreate');
   },
   created() {
     console.log('created');
@@ -53,10 +55,10 @@ export default {
       console.log('loginOk')
       this.$router.push('/Main');
       socket.emit('setName', {
-        name: this.$data.mes,
+        name: this.$data.name,
         color: this.$data.color,
       });
-      this.$data.mes = '';
+      this.$data.name = '';
       this.$data.password = '';
       this.$data.color = 'green';
     });
@@ -65,10 +67,10 @@ export default {
     socket.on('loginOk', (color) => {
       this.$router.push('/main');
       socket.emit('setName', {
-        name: this.$data.mes,
+        name: this.$data.name,
         color: color,
       });
-      this.$data.mes = '';
+      this.$data.name = '';
       this.$data.password = '';
       this.$data.color = 'green';
     });
@@ -80,21 +82,6 @@ export default {
         error: message,
       })
     });
-  },
-  beforeMount() {
-    console.log('beforemount');
-  },
-  mounted() {
-    console.log('mounted');
-  },
-  beforeUpdate() {
-    console.log('beforeupdate');
-  },
-  updated() {
-    console.log('updated');
-  },
-  beforeDestroy() {
-    console.log('beforedestroy');
   },
   methods: {
     /**
@@ -110,13 +97,13 @@ export default {
         }
         console.log('checktopcolor', this.$data.color);
         socket.emit('newlogin', {
-          name: this.$data.mes,
+          name: this.$data.name,
           password: this.$data.password,
           color: this.$data.color,
         });
       } else {
         socket.emit('login', {
-        name: this.$data.mes,
+        name: this.$data.name,
         password: this.$data.password,
         color: this.$data.color,
       });
@@ -129,6 +116,25 @@ export default {
 <style lang="scss" scoped>
 .logo {
   width: 40px;
+}
+
+.login {
+  border: solid 3px #ff0;
+  display: inline-block;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  background-color: #ff0;
+  margin-left: 30px;
+}
+
+form {
+  margin-left: 50px;
+
+  a {
+    color: $red;
+  }
 }
 
 .errorlist {

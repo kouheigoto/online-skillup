@@ -1,5 +1,5 @@
 <template>
-  <div id="timeline">
+  <div id="timeline" class ="timeline">
     <p class="head">
       <img class="logo" src="../../images/logo.jpg" alt="ロゴ">
       <span>参加者：{{ $data.id }}人</span>
@@ -7,13 +7,13 @@
     </p>
     <div class="timeline">
     <form @submit="onSubmit" class="button">
-      <input v-model="$data.mes" type="text" class="sendmessage"/>
+      <input v-model="$data.message" type="text" class="sendmessage"/>
       <button type="submit" class="send">送信</button>
     </form>
     <MyComponent v-for="post in $data.messages"
     :key="post.length"
     :name="post.name"
-    :message="post.mes"
+    :message="post.message"
     :time="post.time"
     :mesid="post.id"
     :id="post.socketId"
@@ -30,7 +30,6 @@ import socket from '../utils/socket';
 // components
 import MyComponent from '../components/MyComponent.vue';
 import Joinlist from '../components/Joinlist';
-
 export default {
   components: {
     MyComponent,
@@ -40,17 +39,15 @@ export default {
     return {
       messages: [],
       name: '',
-      mes: '',
+      message: '',
       socketId: '',
       joinList: [],
       color: '',
     };
   },
-  beforeCreate() {
-    console.log('beforcreate');
-  },
   created() {
     console.log('created');
+
     // 参加通知
     socket.on('setName', (setName) => {
       this.$data.name = setName.name;
@@ -68,10 +65,12 @@ export default {
 
     // 退室通知
     socket.on('disconnect', (name) => {
+      console.log("disconnect", this.$data.messages.length);
       this.$data.messages.push({
         name: '',
-        mes: name + 'が退室しました'
+        message: name + 'が退室しました'
       });
+      console.log("disconnect", this.$data.messages.length);
     });
 
     // メッセージ削除
@@ -85,11 +84,11 @@ export default {
     // メッセージプッシュ
     socket.on('sendMessage', (data) => {
       console.log('name', data.name);
-      console.log('mes', data.message);
+      console.log('message', data.message);
       if (this.$data.messages[this.$data.messages.length - 1].id !== data.id) {
       this.$data.messages.push({
         name: data.name,
-        mes: data.message,
+        message: data.message,
         time: data.time,
         id: data.id,
         socketId: data.socketid,
@@ -104,7 +103,7 @@ export default {
     // socketId取得
     socket.on('socketId', (id) => {
       this.$data.socketId = id;
-    })
+    });
 
     // シークレットチャット接続確認
     socket.on('ssId', (id) => {
@@ -123,7 +122,7 @@ export default {
     socket.on('checkName', (name) => {
       console.log('name', name);
       this.$data.name = name;
-    })
+    });
 
     // シークレットチャットから戻ってきたことの確認
     socket.on('returnTop', (list) => {
@@ -138,22 +137,10 @@ export default {
       socket.emit('secretBack', this.$data.socketId);
     });
   },
-  beforeMount() {
-    console.log('beforemount');
-  },
-  mounted() {
-    console.log('mounted');
-  },
-  beforeUpdate() {
-    console.log('beforeupdate');
-  },
   updated() {
     console.log('updated');
     this.scrollDown();
     this.checkName();
-  },
-  beforeDestroy() {
-    console.log('beforedestroy');
   },
   methods: {
     /**
@@ -163,11 +150,11 @@ export default {
       e.preventDefault();
       socket.emit('sendMessage', {
         name: '',
-        message: this.$data.mes,
+        message: this.$data.message,
         id: this.$data.socketId,
         color: this.$data.color,
       });
-      this.$data.mes = '';
+      this.$data.message = '';
     },
     // deleteボタン
     onDelete(key) {

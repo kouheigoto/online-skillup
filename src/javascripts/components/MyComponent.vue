@@ -1,19 +1,24 @@
 <template>
   <div>
     <ul v-if="name === ''"><li class="systemMessage">{{ message }}</li></ul>
-  <ul v-else-if="name === keyName"><li class="right">
-  <p class="message" :class="color">{{ message }}</p>
-  <p class="time">{{ time }}</p>
-  <p><button @click="onDelete($event, mesid)">削除</button></p></li></ul>
-  <ul v-else><li class="left"><p class="name">{{ name }}</p>
-  <p class="message" :class="color">{{ message }}</p>
-  <p class="time">{{ time }}</p></li></ul>
+    <ul v-else-if="name === keyName">
+      <li class="right">
+        <p class="message" :class="color">{{ message }}</p>
+        <p class="time">{{ time }}</p>
+        <p><button @click="onDelete($event, mesid)">削除</button></p>
+      </li>
+    </ul>
+    <ul v-else>
+      <li class="left"><p class="name">{{ name }}</p>
+        <p class="message" :class="color">{{ message }}</p>
+        <p class="time">{{ time }}</p>
+      </li>
+    </ul>
   </div>
 </template>
 
 <script>
 import VueTypes from 'vue-types';
-
 export default {
   props: {
     name: VueTypes.string.isRequired,
@@ -35,7 +40,6 @@ export default {
     }
   }
 };
-
 </script>
 
 <style lang="scss" scoped>
@@ -48,17 +52,17 @@ export default {
 .right {
   list-style: none;
   text-align: right;
-}
 
-.right .message {
-  text-align: left;
-  display: inline-block;
-  border-radius: 20px;
-  width: 400px;
-  padding-left: 10px;
-  padding-right: 1px;
-  font-size: 1.3em;
-  color: #fff;
+  .message {
+    text-align: left;
+    display: inline-block;
+    border-radius: 20px;
+    width: 400px;
+    padding-left: 10px;
+    padding-right: 1px;
+    font-size: 1.3em;
+    color: #fff;
+  }
 }
 
 .red {
@@ -80,20 +84,20 @@ export default {
 .left {
   list-style: none;
   text-align: left;
-}
 
-.left .message {
-  border-radius: 20px;
-  display: inline-block;
-  width: 400px;
-  padding-left: 10px;
-  padding-right: 1px;
-  font-size: 1.3em;
-  color: #fff;
-}
+  .message {
+    border-radius: 20px;
+    display: inline-block;
+    width: 400px;
+    padding-left: 10px;
+    padding-right: 1px;
+    font-size: 1.3em;
+    color: #fff;
+  }
 
-.left .name {
-  color: #fff;
+  .name {
+    color: #fff;
+  }
 }
 
 .time {
